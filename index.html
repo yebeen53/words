@@ -1,0 +1,874 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>단어 암기 웹사이트</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      body {
+        font-family: "Noto Sans KR", sans-serif;
+      }
+      .modal-open {
+        overflow: hidden;
+      }
+    </style>
+  </head>
+  <body class="bg-gray-50 text-gray-800">
+    <!-- 상단 네비게이션 바 -->
+    <header class="bg-white shadow-sm sticky top-0 z-40">
+      <nav
+        class="container mx-auto px-6 py-3 flex justify-between items-center"
+      >
+        <a href="#" id="logo" class="text-2xl font-bold text-blue-600"
+          >단어장</a
+        >
+      </nav>
+    </header>
+
+    <main class="container mx-auto p-6">
+      <!-- 메인 화면 컨테이너 -->
+      <div id="main-view">
+        <section id="home" class="mb-16">
+          <div class="bg-white p-8 rounded-xl shadow-md mb-8">
+            <h1 class="text-3xl font-bold mb-2">예은님, 오늘도 화이팅!</h1>
+            <p class="text-gray-600 mb-4">
+              오늘의 학습 목표를 향해 달려보세요.
+            </p>
+            <div>
+              <div class="flex justify-between items-center mb-1">
+                <span class="text-base font-medium text-blue-700"
+                  >오늘의 학습량</span
+                >
+                <div class="flex items-center">
+                  <span id="goal-text" class="text-sm font-medium text-blue-700"
+                    >0 / 30 단어</span
+                  >
+                  <button
+                    id="edit-goal-btn"
+                    class="ml-2 text-gray-500 hover:text-blue-600"
+                  >
+                    <i class="fa-solid fa-pen-to-square"></i>
+                  </button>
+                </div>
+              </div>
+              <div class="w-full bg-gray-200 rounded-full h-2.5">
+                <div
+                  id="progress-bar"
+                  class="bg-blue-600 h-2.5 rounded-full"
+                  style="width: 0%"
+                ></div>
+              </div>
+            </div>
+          </div>
+
+          <h2 class="text-2xl font-bold mb-6">나의 단어장 만들기</h2>
+          <div class="bg-white p-8 rounded-xl shadow-md">
+            <div class="space-y-4">
+              <div>
+                <label
+                  for="wordbook-name-input"
+                  class="block text-sm font-medium text-gray-700"
+                  >새 단어장 이름</label
+                >
+                <input
+                  type="text"
+                  id="wordbook-name-input"
+                  placeholder="예: 토익 빈출 단어"
+                  class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+              <div class="pt-2">
+                <button
+                  id="create-wordbook-btn"
+                  class="w-full flex items-center justify-center bg-blue-600 text-white font-bold py-3 px-6 rounded-lg hover:bg-blue-700 transition"
+                >
+                  <i class="fa-solid fa-plus mr-2"></i>
+                  만들고 단어 추가하기
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section id="wordbooks" class="mb-16">
+          <div class="flex justify-between items-center mb-6">
+            <h2 class="text-2xl font-bold">나의 단어장 목록</h2>
+          </div>
+          <div
+            id="wordbooks-list"
+            class="grid md:grid-cols-2 lg:grid-cols-3 gap-6"
+          >
+            <!-- JavaScript로 단어장 목록이 여기에 생성됩니다. -->
+          </div>
+        </section>
+      </div>
+
+      <!-- 학습 화면 컨테이너 -->
+      <div id="learn-view" class="hidden">
+        <section id="learn" class="mb-16">
+          <div class="flex justify-between items-center mb-6">
+            <h2 id="learn-wordbook-title" class="text-2xl font-bold"></h2>
+            <button
+              id="exit-learn-btn"
+              class="px-4 py-2 bg-gray-200 rounded-md hover:bg-gray-300"
+            >
+              나가기
+            </button>
+          </div>
+          <div class="max-w-xl mx-auto">
+            <div
+              id="learn-progress"
+              class="text-center text-lg font-semibold mb-4"
+            ></div>
+            <!-- Static Card -->
+            <div class="bg-white rounded-xl shadow-lg p-8 text-center">
+              <p class="text-gray-500 text-sm">단어</p>
+              <h3 id="learn-word-display" class="text-5xl font-bold my-4"></h3>
+              <hr class="my-6" />
+              <p class="text-gray-500 text-sm">뜻</p>
+              <h4
+                id="learn-meaning-display"
+                class="text-3xl font-bold text-blue-600 mt-2"
+              ></h4>
+            </div>
+            <div class="mt-6">
+              <button
+                id="learn-next-btn"
+                class="w-full bg-gray-700 text-white font-bold py-3 rounded-lg hover:bg-gray-800 transition"
+              >
+                다음
+              </button>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- 퀴즈 화면 컨테이너 -->
+      <div id="quiz-view" class="hidden">
+        <section id="quiz" class="mb-16">
+          <div class="flex justify-between items-center mb-6">
+            <h2 id="quiz-wordbook-title" class="text-2xl font-bold"></h2>
+            <button
+              id="exit-quiz-btn"
+              class="px-4 py-2 bg-gray-200 rounded-md hover:bg-gray-300"
+            >
+              나가기
+            </button>
+          </div>
+          <div class="max-w-xl mx-auto">
+            <div
+              id="quiz-progress"
+              class="text-center text-lg font-semibold mb-4"
+            ></div>
+            <div class="bg-white p-8 rounded-xl shadow-md">
+              <p class="text-gray-600 mb-2">단어</p>
+              <h3 id="quiz-word" class="text-4xl font-bold mb-6"></h3>
+              <label
+                for="quiz-meaning-input"
+                class="block text-sm font-medium text-gray-700 mb-1"
+                >뜻을 입력하세요:</label
+              >
+              <input
+                type="text"
+                id="quiz-meaning-input"
+                class="w-full px-3 py-2 border border-gray-300 rounded-md"
+              />
+            </div>
+            <button
+              id="next-quiz-btn"
+              class="mt-6 w-full bg-blue-600 text-white font-bold py-3 rounded-lg hover:bg-blue-700 transition"
+            >
+              다음 문제
+            </button>
+          </div>
+        </section>
+      </div>
+
+      <!-- 퀴즈 결과 화면 컨테이너 -->
+      <div id="quiz-result-view" class="hidden">
+        <section id="quiz-result" class="mb-16 text-center">
+          <div class="max-w-xl mx-auto bg-white p-8 rounded-xl shadow-md">
+            <h2 class="text-3xl font-bold mb-4">퀴즈 결과</h2>
+            <div class="text-6xl font-bold text-blue-600 mb-2">
+              <span id="quiz-score"></span> / <span id="quiz-total"></span>
+            </div>
+            <p id="quiz-feedback" class="text-lg text-gray-700 mb-8"></p>
+            <button
+              id="back-to-main-btn"
+              class="w-full bg-gray-700 text-white font-bold py-3 rounded-lg hover:bg-gray-800 transition"
+            >
+              메인으로 돌아가기
+            </button>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <!-- 모든 모달들 -->
+    <div
+      id="goal-modal"
+      class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center"
+    >
+      <div class="bg-white p-8 rounded-lg shadow-xl w-full max-w-sm">
+        <h3 class="text-xl font-bold mb-4">학습 목표 설정</h3>
+        <label
+          for="daily-goal-input"
+          class="block text-sm font-medium text-gray-700"
+          >하루에 암기할 단어 수</label
+        >
+        <input
+          type="number"
+          id="daily-goal-input"
+          value="30"
+          class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md"
+        />
+        <div class="mt-6 flex justify-end space-x-4">
+          <button
+            class="close-modal-btn px-4 py-2 bg-gray-200 rounded-md hover:bg-gray-300"
+          >
+            취소
+          </button>
+          <button
+            id="save-goal-btn"
+            class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+          >
+            저장
+          </button>
+        </div>
+      </div>
+    </div>
+    <div
+      id="add-word-modal"
+      class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center p-4"
+    >
+      <div class="bg-white p-8 rounded-lg shadow-xl w-full max-w-md relative">
+        <button
+          class="close-modal-btn absolute top-4 right-4 text-gray-500 hover:text-gray-800"
+        >
+          <i class="fa-solid fa-xmark fa-lg"></i>
+        </button>
+        <h3 class="text-xl font-bold mb-2">단어 추가하기</h3>
+        <p class="text-gray-600 mb-6">
+          단어장: <span id="modal-wordbook-name" class="font-semibold"></span>
+        </p>
+        <div class="space-y-4">
+          <button
+            id="add-manually-btn"
+            class="w-full flex items-center justify-center bg-gray-700 text-white font-bold py-3 px-6 rounded-lg hover:bg-gray-800 transition"
+          >
+            <i class="fa-solid fa-pencil mr-2"></i> 직접 입력하기
+          </button>
+          <button
+            id="add-from-photo-btn"
+            class="w-full flex items-center justify-center bg-blue-600 text-white font-bold py-3 px-6 rounded-lg hover:bg-blue-700 transition"
+          >
+            <i class="fa-solid fa-camera mr-2"></i> 사진으로 여러 단어 추가
+          </button>
+        </div>
+      </div>
+    </div>
+    <div
+      id="photo-add-modal"
+      class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center p-4"
+    >
+      <div
+        class="bg-white p-8 rounded-lg shadow-xl w-full max-w-2xl relative max-h-[90vh] flex flex-col"
+      >
+        <button
+          class="close-modal-btn absolute top-4 right-4 text-gray-500 hover:text-gray-800"
+        >
+          <i class="fa-solid fa-xmark fa-lg"></i>
+        </button>
+        <h3 class="text-xl font-bold mb-4">사진에서 단어 인식</h3>
+        <div class="flex-grow overflow-y-auto pr-2">
+          <div
+            id="photo-upload-area"
+            class="w-full h-48 bg-gray-100 border-2 border-dashed rounded-lg flex flex-col justify-center items-center mb-4 cursor-pointer"
+          >
+            <i class="fa-solid fa-image text-gray-400 text-4xl mb-2"></i>
+            <p class="text-gray-500">단어가 포함된 사진을 업로드하세요</p>
+            <input
+              type="file"
+              id="photo-upload-input"
+              class="hidden"
+              accept="image/*"
+            />
+          </div>
+          <h4 class="font-semibold mb-2">인식된 단어 목록</h4>
+          <p class="text-sm text-gray-500 mb-4">
+            추가할 단어를 확인하고 수정하세요. (데모)
+          </p>
+          <div id="recognized-words-list" class="space-y-3"></div>
+        </div>
+        <div class="mt-6 pt-4 border-t">
+          <button
+            id="save-photo-words-btn"
+            class="w-full bg-blue-600 text-white font-bold py-3 rounded-lg hover:bg-blue-700"
+          >
+            선택한 단어 모두 추가
+          </button>
+        </div>
+      </div>
+    </div>
+    <div
+      id="manual-add-modal"
+      class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center p-4"
+    >
+      <div class="bg-white p-8 rounded-lg shadow-xl w-full max-w-md relative">
+        <button
+          class="close-modal-btn absolute top-4 right-4 text-gray-500 hover:text-gray-800"
+        >
+          <i class="fa-solid fa-xmark fa-lg"></i>
+        </button>
+        <h3 class="text-xl font-bold mb-4">직접 단어 추가</h3>
+        <div class="space-y-4">
+          <div>
+            <label
+              for="manual-word-input"
+              class="block text-sm font-medium text-gray-700"
+              >단어</label
+            >
+            <input
+              type="text"
+              id="manual-word-input"
+              class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md"
+            />
+          </div>
+          <div>
+            <label
+              for="manual-meaning-input"
+              class="block text-sm font-medium text-gray-700"
+              >뜻</label
+            >
+            <input
+              type="text"
+              id="manual-meaning-input"
+              class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md"
+            />
+          </div>
+        </div>
+        <div class="mt-6 pt-4 border-t">
+          <button
+            id="save-manual-word-btn"
+            class="w-full bg-blue-600 text-white font-bold py-3 rounded-lg hover:bg-blue-700"
+          >
+            단어 추가
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        // --- 상태 관리 (State Management) ---
+        let appState = {
+          dailyGoal: 30,
+          wordsLearnedToday: 0,
+          wordbooks: [],
+          currentWordbookId: null,
+        };
+
+        let learningSession = {
+          isActive: false,
+          wordbookId: null,
+          words: [],
+          currentIndex: 0,
+        };
+        let quizSession = {
+          isActive: false,
+          wordbookId: null,
+          words: [],
+          currentIndex: 0,
+          score: 0,
+          userAnswers: [],
+        };
+
+        // --- DOM 요소 캐싱 ---
+        const DOMElements = {
+          body: document.body,
+          mainView: document.getElementById("main-view"),
+          learnView: document.getElementById("learn-view"),
+          quizView: document.getElementById("quiz-view"),
+          quizResultView: document.getElementById("quiz-result-view"),
+          logo: document.getElementById("logo"),
+
+          goalText: document.getElementById("goal-text"),
+          progressBar: document.getElementById("progress-bar"),
+          wordbookNameInput: document.getElementById("wordbook-name-input"),
+          wordbooksList: document.getElementById("wordbooks-list"),
+          createWordbookBtn: document.getElementById("create-wordbook-btn"),
+
+          learnWordbookTitle: document.getElementById("learn-wordbook-title"),
+          exitLearnBtn: document.getElementById("exit-learn-btn"),
+          learnProgress: document.getElementById("learn-progress"),
+          learnWordDisplay: document.getElementById("learn-word-display"),
+          learnMeaningDisplay: document.getElementById("learn-meaning-display"),
+          learnNextBtn: document.getElementById("learn-next-btn"),
+
+          quizWordbookTitle: document.getElementById("quiz-wordbook-title"),
+          exitQuizBtn: document.getElementById("exit-quiz-btn"),
+          quizProgress: document.getElementById("quiz-progress"),
+          quizWord: document.getElementById("quiz-word"),
+          quizMeaningInput: document.getElementById("quiz-meaning-input"),
+          nextQuizBtn: document.getElementById("next-quiz-btn"),
+
+          quizScore: document.getElementById("quiz-score"),
+          quizTotal: document.getElementById("quiz-total"),
+          quizFeedback: document.getElementById("quiz-feedback"),
+          backToMainBtn: document.getElementById("back-to-main-btn"),
+
+          editGoalBtn: document.getElementById("edit-goal-btn"),
+          goalModal: document.getElementById("goal-modal"),
+          addWordModal: document.getElementById("add-word-modal"),
+          photoAddModal: document.getElementById("photo-add-modal"),
+          manualAddModal: document.getElementById("manual-add-modal"),
+          dailyGoalInput: document.getElementById("daily-goal-input"),
+          saveGoalBtn: document.getElementById("save-goal-btn"),
+          modalWordbookName: document.getElementById("modal-wordbook-name"),
+          addManuallyBtn: document.getElementById("add-manually-btn"),
+          addFromPhotoBtn: document.getElementById("add-from-photo-btn"),
+          photoUploadArea: document.getElementById("photo-upload-area"),
+          photoUploadInput: document.getElementById("photo-upload-input"),
+          recognizedWordsList: document.getElementById("recognized-words-list"),
+          savePhotoWordsBtn: document.getElementById("save-photo-words-btn"),
+          manualWordInput: document.getElementById("manual-word-input"),
+          manualMeaningInput: document.getElementById("manual-meaning-input"),
+          saveManualWordBtn: document.getElementById("save-manual-word-btn"),
+          closeModalBtns: document.querySelectorAll(".close-modal-btn"),
+        };
+
+        // --- 데이터 영속성 ---
+        const saveData = () =>
+          localStorage.setItem("wordAppData", JSON.stringify(appState));
+        const loadData = () => {
+          const data = localStorage.getItem("wordAppData");
+          if (data) {
+            const parsedData = JSON.parse(data);
+            appState = {
+              dailyGoal: 30,
+              wordsLearnedToday: 0,
+              wordbooks: [],
+              ...parsedData,
+              wordbooks: Array.isArray(parsedData.wordbooks)
+                ? parsedData.wordbooks
+                : [],
+            };
+          }
+        };
+
+        // --- UI 렌더링 ---
+        const renderGoal = () => {
+          DOMElements.goalText.textContent = `${appState.wordsLearnedToday} / ${appState.dailyGoal} 단어`;
+          const progress =
+            appState.dailyGoal > 0
+              ? (appState.wordsLearnedToday / appState.dailyGoal) * 100
+              : 0;
+          DOMElements.progressBar.style.width = `${progress}%`;
+          DOMElements.dailyGoalInput.value = appState.dailyGoal;
+        };
+        const renderWordbooks = () => {
+          DOMElements.wordbooksList.innerHTML = "";
+          if (appState.wordbooks.length === 0) {
+            DOMElements.wordbooksList.innerHTML = `<p class="text-gray-500 md:col-span-3 text-center">만들어진 단어장이 없습니다. 위에서 새 단어장을 만들어보세요!</p>`;
+            return;
+          }
+          appState.wordbooks.forEach((wb) => {
+            const card = document.createElement("div");
+            const isOdanote = wb.id === "odanote";
+            const cardBg = isOdanote ? "bg-red-50" : "bg-white";
+            const icon = isOdanote
+              ? '<i class="fa-solid fa-book-medical text-red-500 mr-2"></i>'
+              : "";
+
+            card.className = `${cardBg} p-6 rounded-xl shadow-md relative`; // relative 추가
+            card.innerHTML = `
+                    ${
+                      !isOdanote
+                        ? `<button data-wordbook-id="${wb.id}" class="delete-btn absolute top-4 right-4 text-gray-400 hover:text-red-500 transition"><i class="fa-solid fa-trash-can"></i></button>`
+                        : ""
+                    }
+                    <h3 class="font-bold text-xl mb-2">${icon}${wb.name}</h3>
+                    <p class="text-gray-500 mb-4">${wb.words.length} 단어</p>
+                    <div class="flex gap-2 mt-4">
+                        <button data-wordbook-id="${
+                          wb.id
+                        }" class="learn-btn w-full bg-gray-200 text-gray-800 font-bold py-2 rounded-lg hover:bg-gray-300 transition">학습</button>
+                        <button data-wordbook-id="${
+                          wb.id
+                        }" class="quiz-btn w-full bg-blue-100 text-blue-800 font-bold py-2 rounded-lg hover:bg-blue-200 transition">퀴즈</button>
+                    </div>
+                `;
+            DOMElements.wordbooksList.appendChild(card);
+          });
+        };
+        const renderAll = () => {
+          renderGoal();
+          renderWordbooks();
+        };
+
+        // --- 모달 관리 ---
+        const openModal = (modal) => {
+          modal.classList.remove("hidden");
+          DOMElements.body.classList.add("modal-open");
+        };
+        const closeModal = (modal) => {
+          if (!modal) return;
+          modal.classList.add("hidden");
+          const isAnyModalOpen = document.querySelector(
+            ".fixed.inset-0:not(.hidden)"
+          );
+          if (!isAnyModalOpen) DOMElements.body.classList.remove("modal-open");
+        };
+
+        // --- 오답노트 기능 ---
+        const addWordToOdanote = (wordObject) => {
+          let odanote = appState.wordbooks.find((wb) => wb.id === "odanote");
+          if (!odanote) {
+            odanote = {
+              id: "odanote",
+              name: "오답 노트",
+              words: [],
+              isOdanote: true,
+            };
+            appState.wordbooks.push(odanote);
+          }
+          const isAlreadyIn = odanote.words.some(
+            (w) => w.word === wordObject.word
+          );
+          if (!isAlreadyIn) {
+            odanote.words.push(wordObject);
+          }
+        };
+
+        // --- 학습 기능 ---
+        const startLearning = (wordbookId) => {
+          const wordbook = appState.wordbooks.find(
+            (wb) => wb.id === wordbookId
+          );
+          if (!wordbook || wordbook.words.length === 0) {
+            alert("단어장에 학습할 단어가 없습니다. 먼저 단어를 추가해주세요.");
+            return;
+          }
+          learningSession = {
+            isActive: true,
+            wordbookId,
+            words: [...wordbook.words].sort(() => Math.random() - 0.5),
+            currentIndex: 0,
+          };
+          DOMElements.mainView.classList.add("hidden");
+          DOMElements.learnView.classList.remove("hidden");
+          DOMElements.learnWordbookTitle.textContent = `"${wordbook.name}" 학습 중`;
+          displayCurrentLearnWord();
+        };
+        const displayCurrentLearnWord = () => {
+          if (!learningSession.isActive) return;
+          const word = learningSession.words[learningSession.currentIndex];
+          DOMElements.learnWordDisplay.textContent = word.word;
+          DOMElements.learnMeaningDisplay.textContent = word.meaning;
+          DOMElements.learnProgress.textContent = `${
+            learningSession.currentIndex + 1
+          } / ${learningSession.words.length}`;
+        };
+        const handleNextLearnCard = () => {
+          if (!learningSession.isActive) return;
+
+          if (appState.wordsLearnedToday < appState.dailyGoal) {
+            appState.wordsLearnedToday++;
+          }
+          renderGoal();
+          saveData();
+
+          learningSession.currentIndex++;
+          if (learningSession.currentIndex >= learningSession.words.length) {
+            endLearning();
+          } else {
+            displayCurrentLearnWord();
+          }
+        };
+        const endLearning = () => {
+          if (learningSession.isActive) {
+            alert("학습이 완료되었습니다!");
+            learningSession.isActive = false;
+          }
+          exitToMain();
+        };
+
+        // --- 퀴즈 기능 ---
+        const startQuiz = (wordbookId) => {
+          const wordbook = appState.wordbooks.find(
+            (wb) => wb.id === wordbookId
+          );
+          if (!wordbook || wordbook.words.length === 0) {
+            alert("단어장에 퀴즈를 볼 단어가 없습니다.");
+            return;
+          }
+          quizSession = {
+            isActive: true,
+            wordbookId,
+            words: [...wordbook.words].sort(() => Math.random() - 0.5),
+            currentIndex: 0,
+            score: 0,
+            userAnswers: [],
+          };
+          DOMElements.mainView.classList.add("hidden");
+          DOMElements.quizView.classList.remove("hidden");
+          DOMElements.quizResultView.classList.add("hidden");
+          DOMElements.quizWordbookTitle.textContent = `"${wordbook.name}" 퀴즈`;
+          displayCurrentQuizQuestion();
+        };
+        const displayCurrentQuizQuestion = () => {
+          const word = quizSession.words[quizSession.currentIndex];
+          DOMElements.quizProgress.textContent = `${
+            quizSession.currentIndex + 1
+          } / ${quizSession.words.length}`;
+          DOMElements.quizWord.textContent = word.word;
+          DOMElements.quizMeaningInput.value = "";
+          DOMElements.quizMeaningInput.focus();
+        };
+        const submitQuizAnswer = () => {
+          if (!quizSession.isActive) return;
+          const userAnswer = DOMElements.quizMeaningInput.value.trim();
+          const currentWord = quizSession.words[quizSession.currentIndex];
+
+          if (userAnswer === currentWord.meaning) {
+            quizSession.score++;
+          } else {
+            addWordToOdanote(currentWord); // 퀴즈에서 틀린 단어만 오답노트에 추가
+          }
+
+          quizSession.currentIndex++;
+          if (quizSession.currentIndex >= quizSession.words.length) {
+            endQuiz();
+          } else {
+            displayCurrentQuizQuestion();
+          }
+        };
+        const endQuiz = () => {
+          quizSession.isActive = false;
+          saveData(); // 오답노트 변경사항 저장
+
+          DOMElements.quizView.classList.add("hidden");
+          DOMElements.quizResultView.classList.remove("hidden");
+
+          DOMElements.quizScore.textContent = quizSession.score;
+          DOMElements.quizTotal.textContent = quizSession.words.length;
+
+          const percentage =
+            (quizSession.score / quizSession.words.length) * 100;
+          let feedback = "조금 더 노력해봐요! 💪";
+          if (percentage >= 80) feedback = "훌륭해요! 🎉";
+          else if (percentage >= 50) feedback = "좋아요! 조금만 더! 👍";
+          DOMElements.quizFeedback.textContent = feedback;
+        };
+
+        const exitToMain = () => {
+          DOMElements.mainView.classList.remove("hidden");
+          DOMElements.learnView.classList.add("hidden");
+          DOMElements.quizView.classList.add("hidden");
+          DOMElements.quizResultView.classList.add("hidden");
+          renderAll();
+        };
+
+        // --- 이벤트 핸들러 초기화 ---
+        const initEventListeners = () => {
+          DOMElements.logo.addEventListener("click", exitToMain);
+          DOMElements.editGoalBtn.addEventListener("click", () =>
+            openModal(DOMElements.goalModal)
+          );
+          DOMElements.saveGoalBtn.addEventListener("click", handleSaveGoal);
+          DOMElements.createWordbookBtn.addEventListener(
+            "click",
+            handleCreateWordbook
+          );
+          DOMElements.addManuallyBtn.addEventListener("click", () =>
+            switchModal(DOMElements.addWordModal, DOMElements.manualAddModal)
+          );
+          DOMElements.addFromPhotoBtn.addEventListener("click", () =>
+            switchModal(DOMElements.addWordModal, DOMElements.photoAddModal)
+          );
+          DOMElements.saveManualWordBtn.addEventListener(
+            "click",
+            handleSaveManualWord
+          );
+          DOMElements.savePhotoWordsBtn.addEventListener(
+            "click",
+            handleSavePhotoWords
+          );
+          DOMElements.photoUploadArea.addEventListener("click", () =>
+            DOMElements.photoUploadInput.click()
+          );
+          DOMElements.photoUploadInput.addEventListener(
+            "change",
+            handlePhotoUpload
+          );
+
+          DOMElements.wordbooksList.addEventListener("click", (e) => {
+            const button = e.target.closest("button");
+            if (!button) return;
+
+            const wordbookId =
+              button.dataset.wordbookId === "odanote"
+                ? "odanote"
+                : parseInt(button.dataset.wordbookId, 10);
+
+            if (button.classList.contains("learn-btn"))
+              startLearning(wordbookId);
+            if (button.classList.contains("quiz-btn")) startQuiz(wordbookId);
+            if (button.classList.contains("delete-btn"))
+              handleDeleteWordbook(wordbookId); // 삭제 버튼 이벤트 추가
+          });
+
+          DOMElements.learnNextBtn.addEventListener(
+            "click",
+            handleNextLearnCard
+          );
+          DOMElements.exitLearnBtn.addEventListener("click", exitToMain);
+
+          DOMElements.nextQuizBtn.addEventListener("click", submitQuizAnswer);
+          DOMElements.quizMeaningInput.addEventListener("keydown", (e) => {
+            if (e.key === "Enter") submitQuizAnswer();
+          });
+          DOMElements.exitQuizBtn.addEventListener("click", exitToMain);
+          DOMElements.backToMainBtn.addEventListener("click", exitToMain);
+
+          DOMElements.closeModalBtns.forEach((btn) => {
+            btn.addEventListener("click", () =>
+              closeModal(btn.closest(".fixed"))
+            );
+          });
+        };
+
+        // --- 핸들러 함수들 ---
+        const handleDeleteWordbook = (wordbookId) => {
+          const wordbookToDelete = appState.wordbooks.find(
+            (wb) => wb.id === wordbookId
+          );
+          if (!wordbookToDelete) return;
+
+          if (
+            confirm(
+              `'${wordbookToDelete.name}' 단어장을 정말 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.`
+            )
+          ) {
+            appState.wordbooks = appState.wordbooks.filter(
+              (wb) => wb.id !== wordbookId
+            );
+            saveData();
+            renderWordbooks();
+          }
+        };
+
+        const handleSaveGoal = () => {
+          const newGoal = parseInt(DOMElements.dailyGoalInput.value, 10);
+          if (newGoal > 0) {
+            appState.dailyGoal = newGoal;
+            saveData();
+            renderGoal();
+            closeModal(DOMElements.goalModal);
+          } else {
+            alert("목표는 1 이상의 숫자로 설정해주세요.");
+          }
+        };
+        const handleCreateWordbook = () => {
+          const name = DOMElements.wordbookNameInput.value.trim();
+          if (!name) {
+            alert("단어장 이름을 입력해주세요.");
+            return;
+          }
+          const newWordbook = { id: Date.now(), name, words: [] };
+          appState.wordbooks.push(newWordbook);
+          appState.currentWordbookId = newWordbook.id;
+          saveData();
+          renderWordbooks();
+          DOMElements.wordbookNameInput.value = "";
+          DOMElements.modalWordbookName.textContent = name;
+          openModal(DOMElements.addWordModal);
+        };
+        const handleSaveManualWord = () => {
+          const word = DOMElements.manualWordInput.value.trim();
+          const meaning = DOMElements.manualMeaningInput.value.trim();
+          if (!word || !meaning) {
+            alert("단어와 뜻을 모두 입력해주세요.");
+            return;
+          }
+          addWordToCurrentBook({ word, meaning });
+          DOMElements.manualWordInput.value = "";
+          DOMElements.manualMeaningInput.value = "";
+          DOMElements.manualWordInput.focus();
+          alert(`'${word}' 단어가 추가되었습니다.`);
+        };
+        const handlePhotoUpload = (event) => {
+          if (!event.target.files || !event.target.files[0]) return;
+          DOMElements.recognizedWordsList.innerHTML = `<p class="text-center text-blue-600">이미지 분석 중... (데모)</p>`;
+          setTimeout(() => {
+            const demoWords = [
+              { word: "Apple", meaning: "사과" },
+              { word: "Banana", meaning: "바나나" },
+              { word: "Cherry", meaning: "체리" },
+            ];
+            DOMElements.recognizedWordsList.innerHTML = demoWords
+              .map(
+                (w) => `
+                    <div class="flex items-center gap-2">
+                        <input type="checkbox" checked class="h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500 photo-word-checkbox">
+                        <input type="text" value="${w.word}" class="flex-1 px-2 py-1 border border-gray-300 rounded-md photo-word-input">
+                        <input type="text" value="${w.meaning}" class="flex-1 px-2 py-1 border border-gray-300 rounded-md photo-meaning-input">
+                    </div>`
+              )
+              .join("");
+          }, 1500);
+        };
+        const handleSavePhotoWords = () => {
+          const wordRows =
+            DOMElements.recognizedWordsList.querySelectorAll(".flex");
+          let addedCount = 0;
+          wordRows.forEach((row) => {
+            const checkbox = row.querySelector(".photo-word-checkbox");
+            if (checkbox && checkbox.checked) {
+              const word = row.querySelector(".photo-word-input").value;
+              const meaning = row.querySelector(".photo-meaning-input").value;
+              if (word && meaning) {
+                addWordToCurrentBook({ word, meaning });
+                addedCount++;
+              }
+            }
+          });
+          alert(`${addedCount}개의 단어가 추가되었습니다.`);
+          closeModal(DOMElements.photoAddModal);
+        };
+        const addWordToCurrentBook = (wordObject) => {
+          const currentBook = appState.wordbooks.find(
+            (wb) => wb.id === appState.currentWordbookId
+          );
+          if (currentBook) {
+            currentBook.words.push(wordObject);
+            saveData();
+            renderWordbooks();
+          }
+        };
+        const switchModal = (from, to) => {
+          closeModal(from);
+          openModal(to);
+        };
+
+        // --- 앱 초기화 ---
+        const initializeApp = () => {
+          loadData();
+          renderAll();
+          initEventListeners();
+        };
+
+        initializeApp();
+      });
+    </script>
+  </body>
+</html>
